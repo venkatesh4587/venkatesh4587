@@ -1,6 +1,6 @@
 FROM ubuntu:latest
 
-RUN yum update && yum -y install curl git unzip wget openjdk-8-jdk
+RUN apt update && apt -y install curl git unzip wget openjdk-8-jdk
 
 RUN wget https://storage.googleapis.com/flutter_infra_release/releases/stable/linux/flutter_linux_3.3.9-stable.tar.xz
 
