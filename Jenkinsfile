@@ -2,27 +2,36 @@ pipeline {
     agent any
 
     stages {
-        stage('SCM Checkout') {
+        stage('checkout') {
             steps {
-                git credentialsId: 'git-creds', url: 'https://github.com/venkatesh4587/venkatesh4587.git'
+                git branch: 'master', url: 'https://github.com/venkatesh4587/venkatesh4587.git'
             }
         }
-        stage('Build Docker Image') {
+        stage('Docker Build') {
             steps {
                 sh 'docker build -t image .'
             }
         }
-        stage('Push Docker Image') {
+        stage('Publish Image to Docker Hub') {
             steps {
-                withCredentials([string(credentialsId: 'docker-pwd', variable: 'DockerHubPWD')]) {
-      sh 'docker login -u 564823 -p ${DockerHubPWD}'               
+                 withDockerRegistry([ credentialsId: "dockerHub", url: "" ]) {
+                 sh 'docker push image'                
+                } 
             }
-            stage('Run Container on QA Server') {
-               def dockerRun = 'docker run -p 8080:8080 -dt --name sms image'
-               sshagent(['qa-server']) {
-                 sh "ssh -o StrictHostKetChecking=no ubuntu@172.31.0.239 $(dockerRun)"
-} 
-            
+            stage('Run Docker container on Jenkins Agent') {
+             
+            steps 
+   {
+                sh "docker run -d -p 8080:8080 image"
+ 
+            }
+        }
+ stage('Run Docker container on remote hosts') {
+             
+            steps {
+                sh "docker -H ssh://jenkins@172.31.0.239 run -d -p 8080:8080 image"
+ 
+            }
+        }
         }
     }
-}
